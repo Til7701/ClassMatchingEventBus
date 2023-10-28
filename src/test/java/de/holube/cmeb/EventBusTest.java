@@ -89,6 +89,22 @@ class EventBusTest {
         verify(ss, times(0)).onTestEvent(any());
     }
 
+    @Test
+    void inheritanceTest() {
+        InheritanceSubscriber is = mock(InheritanceSubscriber.class);
+
+        Event<SuperInterface> event = new Event<>(new Impl());
+
+        EventBus eventBus = new EventBus();
+        eventBus.register(is);
+
+        eventBus.post(event);
+        verify(is, times(1)).onTestEvent(any());
+    }
+
+    interface SuperInterface {
+    }
+
     static class StringSubscriber {
         @Subscribe(eventClass = String.class)
         public void onTestEvent(Event<String> event) {
@@ -114,6 +130,15 @@ class EventBusTest {
     static class DeadEventSubscriber {
         @Subscribe(eventClass = DeadEvent.class)
         public void onTestEvent(DeadEvent event) {
+        }
+    }
+
+    static class Impl implements SuperInterface {
+    }
+
+    static class InheritanceSubscriber {
+        @Subscribe(eventClass = Impl.class)
+        public void onTestEvent(Event<Impl> event) {
         }
     }
 
