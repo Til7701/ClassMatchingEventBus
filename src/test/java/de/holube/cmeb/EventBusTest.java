@@ -4,17 +4,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class EventBusImplTest {
+class EventBusTest {
 
     @Test
     void registerNullTest() {
-        EventBusImpl eventBus = new EventBusImpl();
+        EventBus eventBus = new EventBus();
         assertThrows(NullPointerException.class, () -> eventBus.register(null));
     }
 
     @Test
     void eventNullTest() {
-        EventBusImpl eventBus = new EventBusImpl();
+        EventBus eventBus = new EventBus();
         assertThrows(NullPointerException.class, () -> eventBus.post(null));
     }
 
