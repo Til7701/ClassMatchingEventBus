@@ -1,5 +1,7 @@
 package de.holube.cmeb;
 
+import java.util.Objects;
+
 /**
  * Events posted to the {@link EventBus}. T is the type the event is identified by and the type of the value carried.
  *
@@ -39,4 +41,18 @@ public class Event<T> {
         return value;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Event<?> event = (Event<?>) o;
+
+        return Objects.equals(value, event.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value != null ? value.hashCode() : 0;
+    }
 }
