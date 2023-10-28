@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 class EventBusTest {
 
@@ -21,20 +23,97 @@ class EventBusTest {
 
     @Test
     void expectedTest() {
-        TestSubscriber ts = Mockito.mock(TestSubscriber.class);
+        StringSubscriber ts = mock(StringSubscriber.class);
         Event<String> event = (Event<String>) Mockito.mock(Event.class);
-        Mockito.when(event.getEventClass()).thenReturn(String.class);
+
+        when(event.getEventClass()).thenReturn(String.class);
 
         EventBus eventBus = new EventBus();
         eventBus.register(ts);
 
         eventBus.post(event);
-        Mockito.verify(ts, Mockito.times(1)).onTestEvent(event);
+        verify(ts, times(1)).onTestEvent(event);
     }
 
-    static class TestSubscriber {
+    @Test
+    void expected2SubscriberTest() {
+        StringSubscriber ss = mock(StringSubscriber.class);
+        IntegerSubscriber is = mock(IntegerSubscriber.class);
+
+        Event<String> event = (Event<String>) mock(Event.class);
+        when(event.getEventClass()).thenReturn(String.class);
+
+        EventBus eventBus = new EventBus();
+        eventBus.register(ss);
+        eventBus.register(is);
+
+        eventBus.post(event);
+        verify(ss, times(1)).onTestEvent(event);
+        verify(is, times(0)).onTestEvent(any());
+    }
+
+    @Test
+    void expected2SubscriberMethodsTest() {
+        IntegerStringSubscriber iss = mock(IntegerStringSubscriber.class);
+
+        Event<String> stringEvent = (Event<String>) mock(Event.class);
+        when(stringEvent.getEventClass()).thenReturn(String.class);
+        Event<Integer> integerEvent = (Event<Integer>) mock(Event.class);
+        when(integerEvent.getEventClass()).thenReturn(Integer.class);
+
+        EventBus eventBus = new EventBus();
+        eventBus.register(iss);
+
+        eventBus.post(stringEvent);
+        verify(iss, times(1)).onStringEvent(stringEvent);
+        verify(iss, times(0)).onIntegerEvent(any());
+
+        eventBus.post(integerEvent);
+        verify(iss, times(1)).onStringEvent(stringEvent);
+        verify(iss, times(1)).onIntegerEvent(integerEvent);
+    }
+
+    @Test
+    void deadEventTest() {
+        DeadEventSubscriber des = mock(DeadEventSubscriber.class);
+        StringSubscriber ss = mock(StringSubscriber.class);
+        Event<Integer> event = (Event<Integer>) mock(Event.class);
+        when(event.getEventClass()).thenReturn(Integer.class);
+
+        EventBus eventBus = new EventBus();
+        eventBus.register(des);
+        eventBus.register(ss);
+
+        eventBus.post(event);
+        verify(des, times(1)).onTestEvent(any());
+        verify(ss, times(0)).onTestEvent(any());
+    }
+
+    static class StringSubscriber {
         @Subscribe(eventClass = String.class)
         public void onTestEvent(Event<String> event) {
+        }
+    }
+
+    static class IntegerSubscriber {
+        @Subscribe(eventClass = Integer.class)
+        public void onTestEvent(Event<Integer> event) {
+        }
+    }
+
+    static class IntegerStringSubscriber {
+        @Subscribe(eventClass = Integer.class)
+        public void onIntegerEvent(Event<Integer> event) {
+        }
+
+        @Subscribe(eventClass = String.class)
+        public void onStringEvent(Event<String> event) {
+        }
+    }
+
+    static class DeadEventSubscriber {
+        @Subscribe(eventClass = DeadEvent.class)
+        public void onTestEvent(DeadEvent event) {
         }
     }
 

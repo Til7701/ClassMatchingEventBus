@@ -51,24 +51,44 @@ public class EventBus {
 
         do {
             Collection<Entry> coll = getEntries(eventClass).orElse(Collections.emptyList());
-            if (!coll.isEmpty()) {
-                foundSubscriber = true;
-                for (Entry entry : coll) {
-                    invokeMethod(entry, event);
-                }
-            }
+            foundSubscriber = foundSubscriber || invokeAll(coll, event);
             eventClass = eventClass.getSuperclass();
         }
         while (eventClass != Object.class);
 
         if (!foundSubscriber) {
-            System.out.println("empty");
+            Collection<Entry> coll = getEntries(DeadEvent.class).orElse(Collections.emptyList());
+            invokeAll(coll, new DeadEvent(event));
         }
     }
 
-    private void invokeMethod(Entry entry, Event<?> event) {
+    /**
+     * Sends the given event to all given subscribers.
+     *
+     * @param entries  the entries
+     * @param argument the argument
+     * @return true, if a subscriber was found
+     */
+    private boolean invokeAll(Collection<Entry> entries, Object argument) {
+        boolean foundSubscriber = false;
+        if (!entries.isEmpty()) {
+            foundSubscriber = true;
+            for (Entry entry : entries) {
+                invokeMethod(entry, argument);
+            }
+        }
+        return foundSubscriber;
+    }
+
+    /**
+     * Invokes the method on the object in the {@link Entry} giving the event as an argument.
+     *
+     * @param entry    the entry with the Object and Method
+     * @param argument the object to give as an argument
+     */
+    private void invokeMethod(Entry entry, Object argument) {
         try {
-            entry.method().invoke(entry.object, event);
+            entry.method().invoke(entry.object, argument);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
