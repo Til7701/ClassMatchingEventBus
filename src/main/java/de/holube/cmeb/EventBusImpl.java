@@ -35,17 +35,31 @@ public class EventBusImpl implements EventBus {
 
     @Override
     public void post(Event<?> event) {
-        Collection<Entry> coll = getEntries(event.getEventClass()).orElse(Collections.emptyList());
-        if (coll.isEmpty()) {
-            System.out.println("empty");
-        } else {
-            for (Entry entry : coll) {
-                try {
-                    entry.method().invoke(entry.object, event);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
+        Class<?> eventClass = event.getEventClass();
+        boolean foundSubscriber = false;
+
+        do {
+            Collection<Entry> coll = getEntries(eventClass).orElse(Collections.emptyList());
+            if (!coll.isEmpty()){
+                foundSubscriber = true;
+                for (Entry entry : coll) {
+                    invokeMethod(entry, event);
                 }
             }
+            eventClass = eventClass.getSuperclass();
+        }
+        while (eventClass != Object.class);
+
+        if (!foundSubscriber) {
+            System.out.println("empty");
+        }
+    }
+
+    private void invokeMethod(Entry entry, Event<?> event) {
+        try {
+            entry.method().invoke(entry.object, event);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 
