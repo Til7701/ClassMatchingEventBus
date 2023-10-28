@@ -9,7 +9,7 @@ public class TestSubscriber {
         eventBus.register(this);
     }
 
-    @Subscribe(clazz = Integer.class)
+    @Subscribe(eventClass = Integer.class)
     public void onTestEvent(EventWrapper<Integer> event) {
         System.out.println("method called, content: " + event.getValue());
     }

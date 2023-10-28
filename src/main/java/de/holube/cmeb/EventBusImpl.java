@@ -25,8 +25,8 @@ public class EventBusImpl implements EventBus {
             for (Method method : clazz.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(Subscribe.class)) {
                     Subscribe annotation = method.getAnnotation(Subscribe.class);
-                    if (annotation.clazz() != null)
-                        putEntry(annotation.clazz(), new Entry(obj, method));
+                    if (annotation.eventClass() != null)
+                        putEntry(annotation.eventClass(), new Entry(obj, method));
                 }
             }
             clazz = clazz.getSuperclass();
